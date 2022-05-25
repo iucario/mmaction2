@@ -1,24 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import onnx
+import onnxruntime as rt
 import argparse
 import warnings
-
 import mmcv
 import numpy as np
 import torch
 from mmcv.runner import load_checkpoint
-
 from mmaction.models import build_model
 
-try:
-    import onnx
-    import onnxruntime as rt
-except ImportError as e:
-    raise ImportError(f'Please install onnx and onnxruntime first. {e}')
-
-try:
-    from mmcv.onnx.symbolic import register_extra_symbolics
-except ModuleNotFoundError:
-    raise NotImplementedError('please update mmcv to version>=1.0.4')
+from mmcv.onnx.symbolic import register_extra_symbolics
 
 
 def _convert_batchnorm(module):
@@ -137,7 +128,6 @@ if __name__ == '__main__':
     args = parse_args()
 
     assert args.opset_version == 11, 'MMAction2 only supports opset 11 now'
-
     cfg = mmcv.Config.fromfile(args.config)
     # import modules from string list.
 
@@ -148,7 +138,7 @@ if __name__ == '__main__':
     model = build_model(
         cfg.model, train_cfg=None, test_cfg=cfg.get('test_cfg'))
     model = _convert_batchnorm(model)
-
+    print('Line 151')
     # onnx.export does not support kwargs
     if hasattr(model, 'forward_dummy'):
         from functools import partial

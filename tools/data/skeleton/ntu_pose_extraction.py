@@ -26,8 +26,8 @@ except (ImportError, ModuleNotFoundError):
                       '`init_pose_model` form `mmpose.apis`. These apis are '
                       'required in this script! ')
 
-mmdet_root = ''
-mmpose_root = ''
+mmdet_root = '~/projects/mmdetection'
+mmpose_root = '~/projects/mmpose'
 
 args = abc.abstractproperty()
 args.det_config = f'{mmdet_root}/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco-person.py'  # noqa: E501

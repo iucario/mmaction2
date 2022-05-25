@@ -6,7 +6,7 @@ _base_ = [
 # model settings
 model = dict(
     backbone=dict(num_segments=16),
-    cls_head=dict(num_classes=10, num_segments=16))
+    cls_head=dict(num_classes=11, num_segments=16))
 
 # dataset settings
 dataset_type = 'RawframeDataset'
@@ -25,9 +25,10 @@ optimizer = dict(
 lr_config = dict(policy='step', step=[10, 20])
 total_epochs = 5
 
-load_from = 'https://download.openmmlab.com/mmaction/recognition/tsm/tsm_r50_256p_1x1x8_50e_kinetics400_rgb/tsm_r50_256p_1x1x8_50e_kinetics400_rgb_20200726-020785e2.pth'  # noqa: E501
+load_from = '/home/umi/projects/WorkoutDetector/checkpoints/'\
+    'tsm_r50_1x1x16_50e_sthv2_20220521.pth'
 # runtime settings
-work_dir = './work_dirs/tsm_k400_pretrained_r50_1x1x8_25e_ucf101_rgb/'
+work_dir = './work_dirs/tsm_r50_1x1x16_50e_sthv2_20220521/'
 
 log_config = dict(
     interval=1,
@@ -73,18 +74,11 @@ val_pipeline = [
     dict(type='ToTensor', keys=['imgs'])
 ]
 test_pipeline = [
-    dict(
-        type='SampleFrames',
-        clip_len=1,
-        frame_interval=1,
-        num_clips=16,
-        test_mode=True),
-    dict(type='RawFrameDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='CenterCrop', crop_size=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='FormatShape', input_format='NCHW'),
-    dict(type='Collect', keys=['imgs', 'label'], meta_keys=[]),
+    dict(type='Collect', keys=['imgs'], meta_keys=[]),
     dict(type='ToTensor', keys=['imgs'])
 ]
 data = dict(
@@ -103,8 +97,8 @@ data = dict(
         pipeline=val_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=ann_file_test,
-        data_prefix=data_root_test,
-        pipeline=test_pipeline))
+        ann_file=ann_file_val,
+        data_prefix=data_root_val,
+        pipeline=val_pipeline))
 evaluation = dict(
-    interval=1, metrics=['top_k_accuracy', 'mean_class_accuracy'])
+    interval=1, metrics=['top_k_accuracy', 'mean_class_accuracy'], topk=(1,))
