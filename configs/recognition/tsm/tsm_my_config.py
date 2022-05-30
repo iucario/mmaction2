@@ -5,8 +5,8 @@ _base_ = [
 
 # model settings
 model = dict(
-    backbone=dict(num_segments=16),
-    cls_head=dict(num_classes=11, num_segments=16))
+    backbone=dict(num_segments=8),
+    cls_head=dict(num_classes=11, num_segments=8))
 
 # dataset settings
 dataset_type = 'RawframeDataset'
