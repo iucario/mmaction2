@@ -25,8 +25,6 @@ optimizer = dict(
 lr_config = dict(policy='step', step=[10, 20])
 total_epochs = 5
 
-load_from = '/home/umi/projects/WorkoutDetector/checkpoints/'\
-    'tsm_r50_1x1x16_50e_sthv2_20220521.pth'
 # runtime settings
 work_dir = './work_dirs/tsm_r50_1x1x16_50e_sthv2_20220521/'
 
