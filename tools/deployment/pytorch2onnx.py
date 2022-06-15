@@ -107,7 +107,7 @@ def parse_args():
     parser.add_argument('--shape',
                         type=int,
                         nargs='+',
-                        default=[1, 3, 8, 224, 224],
+                        default=[1, 8, 3, 224, 224],
                         help='input video size')
     parser.add_argument('--softmax',
                         action='store_true',
