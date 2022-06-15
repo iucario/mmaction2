@@ -57,14 +57,13 @@ def pytorch2onnx(model,
     input_tensor = torch.randn(input_shape)
 
     register_extra_symbolics(opset_version)
-    torch.onnx.export(
-        model,
-        input_tensor,
-        output_file,
-        export_params=True,
-        keep_initializers_as_inputs=True,
-        verbose=show,
-        opset_version=opset_version)
+    torch.onnx.export(model,
+                      input_tensor,
+                      output_file,
+                      export_params=True,
+                      keep_initializers_as_inputs=True,
+                      verbose=show,
+                      opset_version=opset_version)
 
     print(f'Successfully exported ONNX model: {output_file}')
     if verify:
@@ -78,48 +77,41 @@ def pytorch2onnx(model,
 
         # get onnx output
         input_all = [node.name for node in onnx_model.graph.input]
-        input_initializer = [
-            node.name for node in onnx_model.graph.initializer
-        ]
+        input_initializer = [node.name for node in onnx_model.graph.initializer]
         net_feed_input = list(set(input_all) - set(input_initializer))
         assert len(net_feed_input) == 1
-        sess = rt.InferenceSession(output_file)
-        onnx_result = sess.run(
-            None, {net_feed_input[0]: input_tensor.detach().numpy()})[0]
+        sess = rt.InferenceSession(
+            output_file, providers=['CPUExecutionProvider', 'CUDAExecutionProvider'])
+        onnx_result = sess.run(None,
+                               {net_feed_input[0]: input_tensor.detach().numpy()})[0]
         # only compare part of results
         random_class = np.random.randint(pytorch_result.shape[1])
-        assert np.allclose(
-            pytorch_result[:, random_class], onnx_result[:, random_class]
-        ), 'The outputs are different between Pytorch and ONNX'
+        assert np.allclose(pytorch_result[:, random_class], onnx_result[:, random_class]
+                          ), 'The outputs are different between Pytorch and ONNX'
         print('The numerical values are same between Pytorch and ONNX')
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description='Convert MMAction2 models to ONNX')
+    parser = argparse.ArgumentParser(description='Convert MMAction2 models to ONNX')
     parser.add_argument('config', help='test config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--show', action='store_true', help='show onnx graph')
     parser.add_argument('--output-file', type=str, default='tmp.onnx')
     parser.add_argument('--opset-version', type=int, default=11)
-    parser.add_argument(
-        '--verify',
-        action='store_true',
-        help='verify the onnx model output against pytorch output')
-    parser.add_argument(
-        '--is-localizer',
-        action='store_true',
-        help='whether it is a localizer')
-    parser.add_argument(
-        '--shape',
-        type=int,
-        nargs='+',
-        default=[1, 3, 8, 224, 224],
-        help='input video size')
-    parser.add_argument(
-        '--softmax',
-        action='store_true',
-        help='wheter to add softmax layer at the end of recognizers')
+    parser.add_argument('--verify',
+                        action='store_true',
+                        help='verify the onnx model output against pytorch output')
+    parser.add_argument('--is-localizer',
+                        action='store_true',
+                        help='whether it is a localizer')
+    parser.add_argument('--shape',
+                        type=int,
+                        nargs='+',
+                        default=[1, 3, 8, 224, 224],
+                        help='input video size')
+    parser.add_argument('--softmax',
+                        action='store_true',
+                        help='wheter to add softmax layer at the end of recognizers')
     args = parser.parse_args()
     return args
 
@@ -135,8 +127,7 @@ if __name__ == '__main__':
         cfg.model.backbone.pretrained = None
 
     # build the model
-    model = build_model(
-        cfg.model, train_cfg=None, test_cfg=cfg.get('test_cfg'))
+    model = build_model(cfg.model, train_cfg=None, test_cfg=cfg.get('test_cfg'))
     model = _convert_batchnorm(model)
     print('Line 151')
     # onnx.export does not support kwargs
@@ -146,19 +137,17 @@ if __name__ == '__main__':
     elif hasattr(model, '_forward') and args.is_localizer:
         model.forward = model._forward
     else:
-        raise NotImplementedError(
-            'Please implement the forward method for exporting.')
+        raise NotImplementedError('Please implement the forward method for exporting.')
 
     checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
 
     # convert model to onnx file
-    pytorch2onnx(
-        model,
-        args.shape,
-        opset_version=args.opset_version,
-        show=args.show,
-        output_file=args.output_file,
-        verify=args.verify)
+    pytorch2onnx(model,
+                 args.shape,
+                 opset_version=args.opset_version,
+                 show=args.show,
+                 output_file=args.output_file,
+                 verify=args.verify)
 
     # Following strings of text style are from colorama package
     bright_style, reset_style = '\x1b[1m', '\x1b[0m'
