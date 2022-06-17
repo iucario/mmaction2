@@ -129,7 +129,7 @@ if __name__ == '__main__':
     # build the model
     model = build_model(cfg.model, train_cfg=None, test_cfg=cfg.get('test_cfg'))
     model = _convert_batchnorm(model)
-    print('Line 151')
+
     # onnx.export does not support kwargs
     if hasattr(model, 'forward_dummy'):
         from functools import partial
